@@ -14,7 +14,7 @@ let
     snavi = cfg.package;
     dotnet = cfg.dotnet;
     fzf = cfg.fzf;
-    name = cfg.runName;
+    name = cfg.wrapperName;
     cheats = builtins.attrValues cfg.cheats;
   };
 in
@@ -26,6 +26,12 @@ in
       type = lib.types.package;
       default = pkgs.callPackage ../package { };
       description = "The Snavi package to install.";
+    };
+
+    installOriginalPackage = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether to also add the original `Snavi` package to the user PATH.";
     };
 
     dotnet = lib.mkOption {
@@ -64,28 +70,34 @@ in
       description = "Snavi cheats to install, keyed by name.";
     };
 
-    enableBashIntegration = lib.mkEnableOption "a `snavi` shell function that runs the cheats and saves the result to history";
+    enableBashIntegration = lib.mkEnableOption "a readline widget that runs Snavi on `Ctrl-g`";
 
-    runName = lib.mkOption {
+    wrapperName = lib.mkOption {
       type = lib.types.str;
-      default = "snavi-run";
-      description = "Name of the generated `snavi-run` wrapper.";
+      description = ''
+        Name of the generated wrapper. Defaults to `"snavi-run"` when
+        `installOriginalPackage` is enabled, and `"snavi"` otherwise.
+      '';
     };
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [
-      cfg.package
-      snaviRun
-    ];
+    programs.snavi.wrapperName = lib.mkDefault (
+      if cfg.installOriginalPackage then "snavi-run" else "snavi"
+    );
+
+    home.packages =
+      [
+        snaviRun
+      ]
+      ++ lib.optional cfg.installOriginalPackage cfg.package;
 
     programs.bash.initExtra = lib.mkIf cfg.enableBashIntegration ''
-      snavi() {
-        local result="$("${snaviRun}/bin/${cfg.runName}")"
-        echo "$result"
-        history -s -- "$result"
-        echo "Saved to history."
+      _snavi_bind() {
+        READLINE_LINE="$("${snaviRun}/bin/${cfg.wrapperName}")"
+        READLINE_POINT=''${#READLINE_LINE}
       }
+      bind -x '"\C-g": _snavi_bind'
     '';
   };
 }

@@ -13,6 +13,19 @@ Nix packaging for [Snavi](https://github.com/yueyinqiu/Snavi) — a [navi](https
 }
 ```
 
+> To avoid building from source, you can use the `yueyinqiu` Cachix binary cache:
+> 
+> ```nix
+> {
+>   nix.settings.extra-substituters = [
+>     "https://yueyinqiu.cachix.org"
+>   ];
+>   nix.settings.extra-trusted-public-keys = [
+>     "yueyinqiu.cachix.org-1:iooLFYpS7e6KAU4+QM5Zoj6Tq76jRGo+kjeAbu8JxAc="
+>   ];
+> }
+> ```
+
 ## Package
 
 The binary is exposed as `Snavi`:
@@ -66,11 +79,12 @@ Options under `programs.snavi`:
 | --- | --- | --- | --- |
 | `enable` | bool | `false` | Whether to enable Snavi |
 | `package` | package | this flake's `snavi` | The `Snavi` package to install |
+| `installOriginalPackage` | bool | `false` | Whether to also add the original `Snavi` package to the user PATH |
 | `dotnet` | package | `pkgs.dotnetCorePackages.sdk_10_0` | dotnet used to run C# scripts |
 | `fzf` | package | `pkgs.fzf` | fzf used for interactive selection |
 | `cheats` | attrsOf submodule | `{ }` | Cheats to install, keyed by name |
-| `enableBashIntegration` | bool | `true` | Add a `snavi` shell function that runs the cheats and saves the result to history |
-| `runName` | str | `"snavi-run"` | Name of the generated wrapper |
+| `enableBashIntegration` | bool | `false` | Bind a readline widget that runs Snavi on `Ctrl-g` |
+| `wrapperName` | str | `"snavi-run"` if `installOriginalPackage`, else `"snavi"` | Name of the generated wrapper |
 
 Each cheat in `cheats` accepts:
 
@@ -79,9 +93,10 @@ Each cheat in `cheats` accepts:
 | `src` | path | Directory containing the cheat entry and helper files (e.g. `.cs` suggesters) |
 | `entry` | str | Path to the cheat entry, relative to `src` |
 
-Enabling the module installs the `Snavi` binary and a `snavi-run` wrapper that
-passes each cheat's entry to Snavi via `-c`. The `src` directory is copied as a
-whole, so helper files referenced relative to the entry keep working.
+Enabling the module installs a wrapper (named `snavi` by default) that passes
+each cheat's entry to Snavi via `-c`. Set `installOriginalPackage = true` to
+also put the original `Snavi` binary on the PATH. The `src` directory is copied
+as a whole, so helper files referenced relative to the entry keep working.
 
 ## Lib
 
