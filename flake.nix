@@ -24,5 +24,18 @@
           default = package;
         }
       );
+
+      lib = forAllSystems (system: {
+        makeSnaviRun = import ./lib/make-snavi-run.nix nixpkgs.legacyPackages.${system};
+      });
+
+      homeManagerModules =
+        let
+          module = ./home-manager-module;
+        in
+        {
+          snavi = module;
+          default = module;
+        };
     };
 }
