@@ -7,7 +7,6 @@ Nix packaging for [Snavi](https://github.com/yueyinqiu/Snavi) — a [navi](https
 ```nix
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     snavi.url = "github:yueyinqiu/Snavi-Nix";
   };
 }
