@@ -7,16 +7,7 @@ pkgs:
   name,
 }:
 let
-  args = pkgs.lib.concatMap (cheat: [
-    "-c"
-    "${
-      builtins.path {
-        path = cheat.src;
-        name = "${name}-cheat";
-        recursive = true;
-      }
-    }/${cheat.entry}"
-  ]) cheats;
+  args = pkgs.lib.concatMap (cheat: [ "-c" "${cheat.src}/${cheat.entry}" ]) cheats;
 in
 pkgs.writeShellApplication {
   name = name;
